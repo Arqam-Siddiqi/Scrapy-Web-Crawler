@@ -2,8 +2,6 @@
 
 A flexible web crawling solution built with Scrapy and FastAPI that extracts structured content from websites.
 
----
-
 ## Table of Contents
 
 1. [Project Structure](#project-structure)  
@@ -15,7 +13,6 @@ A flexible web crawling solution built with Scrapy and FastAPI that extracts str
 7. [Content Extraction](#content-extraction)
 8. [License](#license)
 
----
 
 ## Project Structure
 
