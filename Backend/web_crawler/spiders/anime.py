@@ -4,7 +4,7 @@ import re
 
 
 class AnimeSpider(scrapy.Spider):
-    name = "anime"
+    name = "results"
 
     # allowed_domains = ["coderslegacy.com"]
     # start_urls = ["https://coderslegacy.com/python/python-classes/"]
@@ -18,21 +18,13 @@ class AnimeSpider(scrapy.Spider):
     # allowed_domains = ["nu.edu.pk"]
     # start_urls = ["https://www.nu.edu.pk/"]
 
-    custom_settings = {
-        'FEEDS': {
-            name + '.json': {
-                'format': 'json',
-                'overwrite': True,
-                'indent': 4,
-            }
-        }
-    }
-
     def __init__(
             self, 
             max_pages=5, 
-            keywords_include: list[str] = None, 
-            keywords_exclude: list[str] = None, 
+            keywords_include=None, 
+            keywords_exclude=None,
+            start_urls=None,
+            allowed_domains=None,
             **kwargs
     ):
         super().__init__(**kwargs)
@@ -40,9 +32,15 @@ class AnimeSpider(scrapy.Spider):
         self.count = 0
         self.max_pages = int(max_pages)
         
+        # Override class attributes if provided
+        if start_urls:
+            self.start_urls = start_urls
+        if allowed_domains:
+            self.allowed_domains = allowed_domains
+            
         self.keywords_include = {k.lower() for k in keywords_include.split(',')} if keywords_include else set()
         self.keywords_exclude = {k.lower() for k in keywords_exclude.split(',')} if keywords_exclude else set()
-
+    
     def should_parse_content(self, response: Response) -> bool:
         if not (self.keywords_include or self.keywords_exclude):
             return True
