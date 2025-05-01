@@ -4,7 +4,7 @@ from pydantic import BaseModel, HttpUrl
 from typing import Optional
 from scrapy.utils.project import get_project_settings
 from scrapy.crawler import CrawlerProcess
-from web_crawler.spiders.anime import AnimeSpider
+from web_crawler.spiders.custom_spider import CustomSpider
 import uvicorn
 import json
 import os
@@ -27,8 +27,8 @@ app.add_middleware(
 
 # Create a model for the crawler parameters
 class CrawlerParams(BaseModel):
-    url: HttpUrl = "https://animecorner.me/spring-2025-anime-rankings-week-3/"
-    domain: str = "animecorner.me"
+    url: HttpUrl = None
+    domain: str = None
     max_pages: int = 5
     keywords_include: Optional[str] = None
     keywords_exclude: Optional[str] = None
@@ -37,12 +37,10 @@ def run_spider_in_process(settings, url, domain, max_pages, keywords_include, ke
     """Run spider in a separate process and save results to the output file"""
     process = CrawlerProcess(settings)
     
-    # Define domain if provided
     allowed_domains = [domain] if domain else None
     
-    # Start the crawler with the specified parameters
     process.crawl(
-        AnimeSpider,
+        CustomSpider,
         start_urls=[url] if url else None,
         allowed_domains=allowed_domains,
         max_pages=max_pages,
@@ -50,7 +48,6 @@ def run_spider_in_process(settings, url, domain, max_pages, keywords_include, ke
         keywords_exclude=keywords_exclude
     )
     
-    # This will block until the crawl is done
     process.start()
 
 @app.get("/")
@@ -110,12 +107,9 @@ async def crawl(params: CrawlerParams):
             print(f"Warning: Failed to delete temporary file {output_file}: {str(e)}")
     
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))
-    host = os.getenv("HOST", "0.0.0.0")
-
-    print(f"Starting server on {host}:{port}...")
     uvicorn.run(
         "app:app",
-        host=host,
-        port=port,
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
     )

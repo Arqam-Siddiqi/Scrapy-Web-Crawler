@@ -7,7 +7,7 @@ function HomePage() {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [url, setUrl] = useState('https://animecorner.me/spring-2025-anime-rankings-week-3/');
+  const [url, setUrl] = useState('https://khi.nu.edu.pk/');
   const [maxPages, setMaxPages] = useState(5);
   const [keywordsInclude, setKeywordsInclude] = useState('');
   const [keywordsExclude, setKeywordsExclude] = useState('');
@@ -228,7 +228,7 @@ function HomePage() {
                     id="keywordsInclude"
                     value={keywordsInclude}
                     onChange={(e) => setKeywordsInclude(e.target.value)}
-                    placeholder="anime, review, season"
+                    placeholder="dean"
                   />
                   <small>Separate multiple keywords with commas</small>
                 </div>
@@ -240,7 +240,7 @@ function HomePage() {
                     id="keywordsExclude"
                     value={keywordsExclude}
                     onChange={(e) => setKeywordsExclude(e.target.value)}
-                    placeholder="spoiler, nsfw"
+                    placeholder="cs"
                   />
                   <small>Separate multiple keywords with commas</small>
                 </div>
@@ -315,7 +315,9 @@ function HomePage() {
             <div className="results-grid">
               {results.map((page, index) => (
                 <div key={index} className="result-card">
-                  <h3 className="page-title">{page.title || 'Untitled Page'}</h3>
+                  <h3 className="page-title" onClick={() => viewDetails(index)} style={{ cursor: 'pointer' }}>
+                    {page.title || 'Untitled Page'}
+                  </h3>
                   <a href={page.url} target="_blank" rel="noopener noreferrer" className="page-url">
                     {page.url}
                   </a>

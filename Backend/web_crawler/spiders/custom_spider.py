@@ -1,20 +1,14 @@
 import scrapy
 from scrapy.http.response import Response
 import re
+from w3lib.url import canonicalize_url
 
-
-class AnimeSpider(scrapy.Spider):
+class CustomSpider(scrapy.Spider):
     name = "results"
-
-    # allowed_domains = ["coderslegacy.com"]
-    # start_urls = ["https://coderslegacy.com/python/python-classes/"]
 
     # allowed_domains = ["geeksforgeeks.org"]
     # start_urls = ["https://www.geeksforgeeks.org/iterators-in-python/"]
 
-    allowed_domains = ["animecorner.me"]
-    start_urls = ["https://animecorner.me/spring-2025-anime-rankings-week-3/"]
-    
     # allowed_domains = ["nu.edu.pk"]
     # start_urls = ["https://www.nu.edu.pk/"]
 
@@ -42,18 +36,47 @@ class AnimeSpider(scrapy.Spider):
         self.keywords_exclude = {k.lower() for k in keywords_exclude.split(',')} if keywords_exclude else set()
     
     def should_parse_content(self, response: Response) -> bool:
+        try:
+            if not response.text:
+                return False
+        except Exception:
+            print(f"Skipping non-text response: {response.url}")
+            return False
+
         if not (self.keywords_include or self.keywords_exclude):
             return True
-            
-        text = ' '.join(response.css('body ::text').getall()).lower()
         
-        if self.keywords_include and not any(keyword in text for keyword in self.keywords_include):
-            return False
+        try:
+            # Extract all text content from the page
+            text = ' '.join(response.css('body ::text').getall()).lower()
             
-        if self.keywords_exclude and any(keyword in text for keyword in self.keywords_exclude):
-            return False
+            # Check keywords to include - must match at least one keyword
+            if self.keywords_include:
+                # Check each keyword individually
+                found_include_match = False
+                for keyword in self.keywords_include:
+                    keyword = " " + keyword.strip().lower() + " "
+                    if keyword and keyword in text:
+                        found_include_match = True
+                        break
+                
+                if not found_include_match:
+                    print(f"Skipping {response.url}: No include keywords found")
+                    return False
             
-        return True
+            # Check keywords to exclude - must not match any keywords
+            if self.keywords_exclude:
+                for keyword in self.keywords_exclude:
+                    keyword = " " + keyword.strip().lower() + " "
+                    if keyword and keyword in text:
+                        print(f"Skipping {response.url}: Found exclude keyword '{keyword}'")
+                        return False
+            
+            return True
+        
+        except Exception as e:
+            print(f"Error checking keywords for {response.url}: {str(e)}")
+            return False
 
     def extract_images(self, response: Response) -> list[str]:
         images = []
@@ -68,6 +91,12 @@ class AnimeSpider(scrapy.Spider):
             alt = img.attrib.get('alt', '')
             
             if src:
+                if ('data:image/svg' in src or 
+                    'blank.gif' in src or 
+                    'placeholder' in src.lower() or
+                    'data:' in src):
+                    continue
+
                 if ' ' in src and ',' in src:  # Likely a srcset
                     src = src.split(',')[0].strip().split(' ')[0]
                 
@@ -213,11 +242,12 @@ class AnimeSpider(scrapy.Spider):
         if self.count >= self.max_pages:
             self.crawler.engine.close_spider(self, "Reached max pages")
             return
-        
-        if response.url in self.visited:
+
+        normalized_url = canonicalize_url(response.url)
+        if normalized_url in self.visited:
             return
         
-        self.visited.add(response.url)
+        self.visited.add(normalized_url)
         if not self.should_parse_content(response):
             print(f"Skipping content for {response.url} due to keyword filtering")
             
@@ -248,11 +278,11 @@ class AnimeSpider(scrapy.Spider):
             "h1": [ h1 for h1 in response.css("h1::text").getall() if h1.strip() ],
             "h2": [ h2 for h2 in response.css("h2::text").getall() if h2.strip() ],
             "text": text,
-            # "links": response.css("a::attr(href)").getall(),
             "images": images,
             "tables": tables,
             "code": code,
             "videos": response.css("video::attr(src)").getall(),
+            "links": response.css("a::attr(href)").getall(),
         }
         
         for href in response.css('a::attr(href)').getall():

@@ -19,17 +19,18 @@ A flexible web crawling solution built with Scrapy and FastAPI that extracts str
 ```
 Project/
 ├── README.md
-└── Backend/
-    ├── app.py                 # FastAPI application
-    ├── requirements.txt       # Python dependencies
-    ├── scrapy.cfg             # Scrapy configuration
-    └── web_crawler/           # Scrapy project
-        ├── items.py           # Data structure definitions
-        ├── middlewares.py     # Request/response processing
-        ├── pipelines.py       # Data processing components
-        ├── settings.py        # Scrapy settings
-        └── spiders/           # Web crawlers
-            └── anime.py       # Main crawler implementation
+├──  Backend/
+    ├── app.py                         # FastAPI application
+    ├── requirements.txt               # Python dependencies
+    ├── scrapy.cfg                     # Scrapy configuration
+    └── web_crawler/                   # Scrapy project
+        ├── items.py                   # Data structure definitions
+        ├── middlewares.py             # Request/response processing
+        ├── pipelines.py               # Data processing components
+        ├── settings.py                # Scrapy settings
+        └── spiders/                   # Web crawlers
+            └── custom_spider.py       # Main crawler implementation
+└── Frontend/
 ```
 
 ## Features
@@ -38,7 +39,7 @@ Project/
 - Configurable parameters for URL, domain, max pages, and keyword filtering
 - Extracts text, images, tables, code blocks, and metadata from websites
 
-## Setup
+## Setup & Run Backend
 
 1. Create a virtual environment:
    ```
@@ -60,12 +61,22 @@ Project/
    pip install -r requirements.txt
    ```
 
-## Running the Application
+4. Start the FastAPI server:
+   ```
+   uvicorn app:app --reload
+   ```
 
-Start the FastAPI server:
-```
-uvicorn app:app --reload
-```
+## Setup & Run Frontend
+
+1. Navigate to Frontend directory and install dependencies:
+   ```
+   cd Frontend
+   npm install
+   ```
+2. Start the React Application:
+   ```
+   npm run dev
+   ```
 
 ## Scrapy Crawler
 - Extracts structured content from websites
@@ -77,37 +88,6 @@ uvicorn app:app --reload
   - Tables
   - Code blocks
   - Meta information
-
-## Backend Architecture
-
-The Backend of this project consists of two main components:
-
-### 1. FastAPI Server (`app.py`)
-
-- Built using FastAPI, a modern, high-performance web framework for building APIs
-- Implements RESTful endpoints for triggering web crawls
-- Uses multiprocessing to run Scrapy crawlers asynchronously without blocking the API
-- Automatically parses and formats crawl results as JSON responses
-- Default configuration set to crawl anime-related content from animecorner.me
-
-### 2. Scrapy Spider (`web_crawler/spiders/anime.py`)
-
-- Implements the `AnimeSpider` class, a custom Scrapy spider
-- Intelligently crawls websites while respecting domain restrictions
-- Features sophisticated content extraction algorithms for various types of web content
-- Implements keyword filtering to include or exclude content based on specified criteria
-- Manages crawl state and respects maximum page count limits
-
-### Dependencies
-
-The project uses several key Python libraries:
-
-- **FastAPI**: For the web API interface
-- **Uvicorn**: ASGI server for running the FastAPI application
-- **Scrapy**: For web crawling and content extraction
-- **Pydantic**: For data validation
-
-Full dependencies are listed in `requirements.txt`.
 
 ## Content Extraction
 
@@ -132,3 +112,34 @@ The crawler is capable of extracting various types of content from web pages:
 - Domain-based filtering to restrict crawling within specific websites
 - Keyword inclusion/exclusion filtering
 - Maximum page count limitation
+
+## Architecture
+
+The Backend of this project consists of two main components:
+
+### 1. Scrapy Spider (`web_crawler/spiders/custom_spider.py`)
+
+- Implements the `CustomSpider` class, a custom Scrapy spider
+- Intelligently crawls websites while respecting domain restrictions
+- Features sophisticated content extraction algorithms for various types of web content
+- Implements keyword filtering to include or exclude content based on specified criteria
+- Manages crawl state and respects maximum page count limits
+
+
+### 2. FastAPI Server (`app.py`)
+
+- Built using FastAPI, a modern, high-performance web framework for building APIs
+- Implements RESTful endpoints for triggering web crawls
+- Uses multiprocessing to run Scrapy crawlers asynchronously without blocking the API
+- Automatically parses and formats crawl results as JSON responses
+
+### 3. React Frontend Application (`App.jsx`)
+- Built with React and Vite for a responsive, modern user interface
+- Implements a tabbed interface for exploring different content types:
+   - Content overview with statistics and media previews
+   - Image gallery with responsive grid layout and lazy loading
+   - Text blocks with categorization and progressive loading
+   - Tables view with proper formatting and navigation
+   - Raw JSON view for developers
+- Communicates with the Backend through RESTful API endpoints
+- Provides intuitive configuration controls for the crawler parameters

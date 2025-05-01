@@ -9,12 +9,89 @@ function DetailPage() {
   const [page, setPage] = useState(null);
   const [error, setError] = useState(null);
   
-  // For load more functionality
-  const [visibleImages, setVisibleImages] = useState(8);
-  const [visibleText, setVisibleText] = useState(5);
-  
-  // Tab management
+  // Add missing activeTab state
   const [activeTab, setActiveTab] = useState('content');
+  
+  // For load more functionality - Double the initial visible text blocks
+  const [visibleImages, setVisibleImages] = useState(12);
+  const [visibleText, setVisibleText] = useState(10); // Increased from 5 to 10
+  
+  // Add state for tracking grid columns
+  const [imageColumnsCount, setImageColumnsCount] = useState(4);
+  // Add state for tracking text columns
+  const [textColumnsCount, setTextColumnsCount] = useState(2);
+  
+  // Add a useEffect to determine the number of columns based on viewport width
+  useEffect(() => {
+    const updateColumnCount = () => {
+      // For images
+      let imgColumnCount = 4; // Default for large screens
+      if (window.innerWidth < 768) {
+        imgColumnCount = 1;
+      } else if (window.innerWidth < 992) {
+        imgColumnCount = 2;
+      } else if (window.innerWidth < 1200) {
+        imgColumnCount = 3;
+      }
+      setImageColumnsCount(imgColumnCount);
+      
+      // For text blocks
+      let txtColumnCount = 2; // Default is 2 columns
+      if (window.innerWidth < 992) {
+        txtColumnCount = 1; // Single column on smaller screens
+      }
+      setTextColumnsCount(txtColumnCount);
+    };
+    
+    // Set initial count
+    updateColumnCount();
+    
+    // Update on window resize
+    window.addEventListener('resize', updateColumnCount);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', updateColumnCount);
+  }, []);
+  
+  // Calculate how many rows are filled with current visible images
+  const filledImageRows = Math.ceil(visibleImages / imageColumnsCount);
+  
+  // Calculate if the last row is fully filled or has empty spaces
+  const lastImageRowIsComplete = (visibleImages % imageColumnsCount) === 0;
+  
+  // Determine if we should load more to fill empty spaces in the last row
+  const shouldLoadMoreImagesToFillRow = !lastImageRowIsComplete && page?.images?.length > visibleImages;
+  
+  // Calculate text blocks row information
+  const filledTextRows = Math.ceil(visibleText / textColumnsCount);
+  const lastTextRowIsComplete = (visibleText % textColumnsCount) === 0;
+  const shouldLoadMoreTextToFillRow = !lastTextRowIsComplete && page?.text?.length > visibleText;
+  
+  // Update load more images function to fill the row
+  const loadMoreImages = () => {
+    if (shouldLoadMoreImagesToFillRow) {
+      // Calculate how many more images needed to fill the last row
+      const neededToFill = imageColumnsCount - (visibleImages % imageColumnsCount);
+      setVisibleImages(prev => Math.min(prev + neededToFill, page.images.length));
+    } else {
+      // Load a full row
+      setVisibleImages(prev => Math.min(prev + imageColumnsCount, page.images.length));
+    }
+  };
+  
+  // Update load more text function to fill the row and load 10 at a time
+  const loadMoreText = () => {
+    if (shouldLoadMoreTextToFillRow) {
+      // Calculate how many more text blocks needed to fill the last row
+      const neededToFill = textColumnsCount - (visibleText % textColumnsCount);
+      setVisibleText(prev => Math.min(prev + neededToFill, page.text.length));
+    } else {
+      // Load 10 more text blocks (or complete rows that make up at least 10)
+      const rowsToLoad = Math.ceil(10 / textColumnsCount);
+      const blocksToLoad = rowsToLoad * textColumnsCount;
+      setVisibleText(prev => Math.min(prev + blocksToLoad, page.text.length));
+    }
+  };
   
   useEffect(() => {
     try {
@@ -39,14 +116,6 @@ function DetailPage() {
         showResults: true 
       } 
     });
-  };
-  
-  const loadMoreImages = () => {
-    setVisibleImages(prev => prev + 8);
-  };
-  
-  const loadMoreText = () => {
-    setVisibleText(prev => prev + 5);
   };
   
   if (error) {
@@ -147,6 +216,12 @@ function DetailPage() {
           onClick={() => setActiveTab('text')}
         >
           Text Blocks ({page.text?.length || 0})
+        </button>
+        <button 
+          className={activeTab === 'tables' ? 'active' : ''} 
+          onClick={() => setActiveTab('tables')}
+        >
+          Tables ({page.tables?.length || 0})
         </button>
         <button 
           className={activeTab === 'json' ? 'active' : ''} 
@@ -306,10 +381,10 @@ function DetailPage() {
               ))}
             </div>
             
-            {page.images && visibleImages < page.images.length && (
+            {visibleImages < page.images?.length && (
               <div className="load-more-container">
                 <button className="load-more-btn" onClick={loadMoreImages}>
-                  Load More Images
+                  {shouldLoadMoreImagesToFillRow ? 'Fill Row' : 'Load More Images'}
                 </button>
                 <span className="showing-count">
                   Showing {visibleImages} of {page.images.length}
@@ -337,7 +412,7 @@ function DetailPage() {
             {page.text && visibleText < page.text.length && (
               <div className="load-more-container">
                 <button className="load-more-btn" onClick={loadMoreText}>
-                  Load More Text
+                  {shouldLoadMoreTextToFillRow ? 'Fill Row' : 'Load More Text (10)'}
                 </button>
                 <span className="showing-count">
                   Showing {visibleText} of {page.text.length}
@@ -353,6 +428,38 @@ function DetailPage() {
             <pre className="json-content">
               <code>{JSON.stringify(page, null, 2)}</code>
             </pre>
+          </div>
+        )}
+
+        {activeTab === 'tables' && (
+          <div className="tables-full">
+            <h3>Tables ({page.tables?.length || 0})</h3>
+            {page.tables && page.tables.length > 0 ? (
+              <div className="tables-list">
+                {page.tables.map((table, tableIdx) => (
+                  <div key={tableIdx} className="table-container">
+                    <div className="table-number">Table #{tableIdx + 1}</div>
+                    <div className="table-scroll">
+                      <table className="data-table">
+                        <tbody>
+                          {table.map((row, rowIdx) => (
+                            <tr key={rowIdx}>
+                              {row.map((cell, cellIdx) => (
+                                <td key={cellIdx}>{cell}</td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-content">
+                <p>No tables found on this page.</p>
+              </div>
+            )}
           </div>
         )}
       </div>
