@@ -11,6 +11,9 @@ import os
 import multiprocessing
 import tempfile
 
+from dotenv import load_dotenv
+load_dotenv()  
+
 app = FastAPI()
 
 # Add CORS middleware to allow requests from the frontend
@@ -56,8 +59,6 @@ async def ping():
 
 @app.post("/crawl")
 async def crawl(params: CrawlerParams):
-    print("start")
-    # Create a temporary file in the Backend directory
     temp_dir = os.path.dirname(os.path.abspath(__file__))
     fd, output_file = tempfile.mkstemp(prefix="crawler_", suffix=".json", dir=temp_dir)
     os.close(fd)  # Close the file descriptor immediately
@@ -109,4 +110,10 @@ async def crawl(params: CrawlerParams):
             print(f"Warning: Failed to delete temporary file {output_file}: {str(e)}")
     
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(
+        "app:app",
+        host="127.0.0.1",
+        port=port,
+        reload=True
+    )
