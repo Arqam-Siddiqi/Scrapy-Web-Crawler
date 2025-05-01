@@ -1409,3 +1409,95 @@ pre, code {
   color: var(--accent-color);
   text-decoration: underline;
 }
+
+/* Update header and container padding */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.5rem;  /* Reduced from 1rem */
+  width: 100%;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 1rem;  /* Reduced from 1.5rem */
+}
+
+.header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+header h1 {
+  color: var(--secondary-color);
+  margin-bottom: 0.25rem;  /* Reduced from 0.5rem */
+  font-size: 3.0rem;  /* Reduced from 2.5rem */
+  text-align: center;
+}
+
+header p {
+  color: var(--text-light);
+  font-size: 1rem;  /* Reduced from 1.1rem */
+  text-align: center;
+  margin-bottom: 0.5rem;  /* Added to reduce space */
+}
+
+/* Reduce tabs margin */
+.tabs, .details-tabs {
+  display: flex;
+  margin-bottom: 1rem;  /* Reduced from 2rem */
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Make tab buttons smaller */
+.tabs button, .details-tabs button {
+  padding: 0.75rem 1.25rem;  /* Reduced from 1rem 1.5rem */
+  font-size: 0.95rem;  /* Reduced from 1rem */
+}
+
+/* Reduce form container spacing */
+.form-container {
+  gap: 1.5rem;  /* Reduced from 2rem */
+}
+
+/* Reduce form heading size */
+.form-heading {
+  margin-bottom: 1rem;  /* Reduced from 1.5rem */
+}
+
+.form-heading h2 {
+  font-size: 1.3rem;  /* Reduced from 1.5rem */
+}
+
+/* Reduce the form group spacing */
+.form-group {
+  margin-bottom: 1rem;  /* Reduced from 1.5rem */
+}
+
+/* Make the form itself take up less space */
+.crawler-form {
+  padding: 1.5rem;  /* Reduced from 2rem */
+}
+
+/* Reduce the form grid gap */
+.form-grid {
+  gap: 1rem;  /* Reduced from 1.5rem */
+  margin-bottom: 1rem;  /* Reduced from 1.5rem */
+}
+
+/* Reduce the size of the help info section */
+.help-info {
+  padding: 1.25rem;  /* Reduced from 1.5rem */
+}
+
+.help-info h3 {
+  margin-bottom: 0.75rem;  /* Reduced from 1rem */
+}
+
+/* Adjust help tip to be more compact */
+.help-tip {
+  margin-top: 1rem;  /* Reduced from 1.5rem */
+  padding: 0.75rem;  /* Reduced from 1rem */
+}

@@ -3,6 +3,7 @@ from scrapy.http.response import Response
 import re
 from w3lib.url import canonicalize_url
 
+
 class CustomSpider(scrapy.Spider):
     name = "results"
 
@@ -242,12 +243,13 @@ class CustomSpider(scrapy.Spider):
         if self.count >= self.max_pages:
             self.crawler.engine.close_spider(self, "Reached max pages")
             return
-
+        
         normalized_url = canonicalize_url(response.url)
         if normalized_url in self.visited:
             return
         
         self.visited.add(normalized_url)
+
         if not self.should_parse_content(response):
             print(f"Skipping content for {response.url} due to keyword filtering")
             
@@ -270,6 +272,7 @@ class CustomSpider(scrapy.Spider):
         tables = self.extract_tables(response)
         code = self.extract_code(response)
         text = self.extract_text(response)
+        links = [response.urljoin(href) for href in response.css('a::attr(href)').getall() if href.strip()]
 
         yield {
             "url": response.url,
@@ -282,10 +285,9 @@ class CustomSpider(scrapy.Spider):
             "tables": tables,
             "code": code,
             "videos": response.css("video::attr(src)").getall(),
-            "links": response.css("a::attr(href)").getall(),
+            "links": links
         }
         
-        for href in response.css('a::attr(href)').getall():
-            url = response.urljoin(href)
+        for url in links:
             if self.allowed_domains[0] in url:
                 yield scrapy.Request(url, callback=self.parse)

@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { ThemeContext } from '../ThemeContext';
@@ -7,14 +7,15 @@ function HomePage() {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [url, setUrl] = useState('https://khi.nu.edu.pk/');
-  const [maxPages, setMaxPages] = useState(5);
+  const [url, setUrl] = useState('');
+  const [maxPages, setMaxPages] = useState(1);
   const [keywordsInclude, setKeywordsInclude] = useState('');
   const [keywordsExclude, setKeywordsExclude] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [results, setResults] = useState(null);
   const [activeTab, setActiveTab] = useState('form');
+  const initialLoadDone = useRef(false);
 
   // Load stored results when component mounts
   useEffect(() => {
@@ -34,6 +35,39 @@ function HomePage() {
       }
     }
   }, [location]);
+
+  // Save form values to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('crawlerFormValues', JSON.stringify({
+      url,
+      maxPages,
+      keywordsInclude,
+      keywordsExclude
+    }));
+  }, [url, maxPages, keywordsInclude, keywordsExclude]);
+
+  // Load form values from localStorage on initial component mount
+  useEffect(() => {
+    // Only load from localStorage on initial mount, not on subsequent renders
+    if (!initialLoadDone.current) {
+      const savedFormValues = localStorage.getItem('crawlerFormValues');
+      
+      if (savedFormValues) {
+        try {
+          const parsedValues = JSON.parse(savedFormValues);
+          
+          // Only set values if they exist in the saved data
+          if (parsedValues.url) setUrl(parsedValues.url);
+          if (parsedValues.maxPages) setMaxPages(parsedValues.maxPages);
+          if (parsedValues.keywordsInclude) setKeywordsInclude(parsedValues.keywordsInclude);
+          if (parsedValues.keywordsExclude) setKeywordsExclude(parsedValues.keywordsExclude);
+        } catch (err) {
+          console.error('Error parsing saved form values:', err);
+        }
+      }
+      initialLoadDone.current = true;
+    }
+  }, []); // Keep this as an empty dependency array so it only runs once
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -228,7 +262,6 @@ function HomePage() {
                     id="keywordsInclude"
                     value={keywordsInclude}
                     onChange={(e) => setKeywordsInclude(e.target.value)}
-                    placeholder="dean"
                   />
                   <small>Separate multiple keywords with commas</small>
                 </div>
@@ -240,7 +273,6 @@ function HomePage() {
                     id="keywordsExclude"
                     value={keywordsExclude}
                     onChange={(e) => setKeywordsExclude(e.target.value)}
-                    placeholder="cs"
                   />
                   <small>Separate multiple keywords with commas</small>
                 </div>

@@ -87,7 +87,7 @@ function DetailPage() {
       setVisibleText(prev => Math.min(prev + neededToFill, page.text.length));
     } else {
       // Load 10 more text blocks (or complete rows that make up at least 10)
-      const rowsToLoad = Math.ceil(10 / textColumnsCount);
+      const rowsToLoad = Math.ceil(50 / textColumnsCount);
       const blocksToLoad = rowsToLoad * textColumnsCount;
       setVisibleText(prev => Math.min(prev + blocksToLoad, page.text.length));
     }
@@ -412,7 +412,7 @@ function DetailPage() {
             {page.text && visibleText < page.text.length && (
               <div className="load-more-container">
                 <button className="load-more-btn" onClick={loadMoreText}>
-                  {shouldLoadMoreTextToFillRow ? 'Fill Row' : 'Load More Text (10)'}
+                  {shouldLoadMoreTextToFillRow ? 'Fill Row' : 'Load More Text (50)'}
                 </button>
                 <span className="showing-count">
                   Showing {visibleText} of {page.text.length}

@@ -55,6 +55,22 @@ ROBOTSTXT_OBEY = True
 #    "web_crawler.middlewares.WebCrawlerDownloaderMiddleware": 543,
 #}
 
+# DOWNLOADER_MIDDLEWARES = {
+#     'web_crawler.spiders.custom_spider.CustomRetryMiddleware': 550,
+#     'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,  # Disable the default middleware
+# }
+
+# Enable built-in retry middleware
+RETRY_ENABLED = True
+RETRY_TIMES = 3  # Maximum number of retries
+RETRY_HTTP_CODES = [500, 502, 503, 504, 408, 429]  # Status codes to retry
+RETRY_PRIORITY_ADJUST = -1  # Adjust priority of retried requests
+
+# Exponential backoff settings
+RETRY_BACKOFF = True
+RETRY_BACKOFF_MAX = 60  # Maximum delay in seconds
+
+
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 #EXTENSIONS = {
