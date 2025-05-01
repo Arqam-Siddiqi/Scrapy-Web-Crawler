@@ -218,9 +218,6 @@ class AnimeSpider(scrapy.Spider):
             return
         
         self.visited.add(response.url)
-        self.count += 1
-        print(f"Visited: {response.url} contains {len(response.css('a::attr(href)').getall())} links")
-
         if not self.should_parse_content(response):
             print(f"Skipping content for {response.url} due to keyword filtering")
             
@@ -234,6 +231,9 @@ class AnimeSpider(scrapy.Spider):
                     yield scrapy.Request(url, callback=self.parse)
 
             return
+
+        self.count += 1
+        print(f"Visited: {response.url} contains {len(response.css('a::attr(href)').getall())} links")
 
         meta_data = self.extract_meta(response)
         images = self.extract_images(response)
