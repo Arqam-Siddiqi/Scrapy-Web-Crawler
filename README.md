@@ -6,13 +6,11 @@ A flexible web crawling solution built with Scrapy and FastAPI that extracts str
 
 1. [Project Structure](#project-structure)  
 2. [Features](#features)  
-3. [Setup](#setup)  
-4. [Running the Application](#running-the-application)  
+3. [Start Backend](#start-backend)  
+4. [Start Frontend](#start-frontend)  
 5. [Scrapy Crawler](#scrapy-crawler)  
-6. [Backend Architecture](#backend-architecture)
-7. [Content Extraction](#content-extraction)
-8. [License](#license)
-
+6. [Content Extraction](#content-extraction)
+7. [Architecture](#architecture)
 
 ## Project Structure
 
@@ -39,7 +37,7 @@ Project/
 - Configurable parameters for URL, domain, max pages, and keyword filtering
 - Extracts text, images, tables, code blocks, and metadata from websites
 
-## Setup & Run Backend
+## Start Backend
 
 1. Create a virtual environment:
    ```
@@ -66,7 +64,7 @@ Project/
    uvicorn app:app --reload
    ```
 
-## Setup & Run Frontend
+## Start Frontend
 
 1. Navigate to Frontend directory and install dependencies:
    ```
