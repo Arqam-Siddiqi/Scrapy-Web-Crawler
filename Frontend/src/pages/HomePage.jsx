@@ -60,7 +60,7 @@ function HomePage() {
       console.log('Sending request with payload:', payload);
       
       // Make the POST request using axios
-      const response = await axios.post('http://localhost:8000/crawl', payload, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/crawl`, payload, {
         headers: {
           'Content-Type': 'application/json',
         },
