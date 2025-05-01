@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, HttpUrl
 from typing import Optional, Any
 from scrapy.utils.project import get_project_settings
 from scrapy.crawler import CrawlerProcess
@@ -6,11 +8,27 @@ from web_crawler.spiders.anime import AnimeSpider
 import uvicorn
 import json
 import os
-import tempfile
 import multiprocessing
 from pathlib import Path
 
 app = FastAPI()
+
+# Add CORS middleware to allow requests from the frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Create a model for the crawler parameters
+class CrawlerParams(BaseModel):
+    url: HttpUrl = "https://animecorner.me/spring-2025-anime-rankings-week-3/"
+    domain: str = "animecorner.me"
+    max_pages: int = 5
+    keywords_include: Optional[str] = None
+    keywords_exclude: Optional[str] = None
 
 def run_spider_in_process(settings, url, domain, max_pages, keywords_include, keywords_exclude, output_file):
     """Run spider in a separate process and save results to the output file"""
@@ -36,18 +54,10 @@ def run_spider_in_process(settings, url, domain, max_pages, keywords_include, ke
 async def ping():
     return {"message": "Server started successfully"} 
 
-@app.get("/crawl")
-async def crawl(
-    url: str = Query("https://animecorner.me/spring-2025-anime-rankings-week-3/", description="URL to crawl"),
-    domain: Optional[str] = Query(None, description="Domain to restrict crawling to"),
-    max_pages: int = Query(5, description="Maximum number of pages to crawl"),
-    keywords_include: Optional[str] = Query(None, description="Keywords to include, comma-separated"),
-    keywords_exclude: Optional[str] = Query(None, description="Keywords to exclude, comma-separated")
-):
-    """Endpoint to crawl a website and return results synchronously"""
+@app.post("/crawl")
+async def crawl(params: CrawlerParams):
     output_file = "results.json"
     
-    # Create settings dictionary for the crawler
     settings = get_project_settings()
     settings['FEEDS'] = {
         output_file: {
@@ -58,15 +68,19 @@ async def crawl(
         }
     }
     
-    if not domain and url:
+    # Extract domain from URL if not provided
+    if not params.domain and params.url:
         from urllib.parse import urlparse
-        parsed_url = urlparse(url)
+        parsed_url = urlparse(str(params.url))
         domain = parsed_url.netloc
+    else:
+        domain = params.domain
     
     ctx = multiprocessing.get_context('spawn')
     p = ctx.Process(
         target=run_spider_in_process,
-        args=(settings, url, domain, max_pages, keywords_include, keywords_exclude, output_file)
+        args=(settings, str(params.url), domain, params.max_pages, 
+              params.keywords_include, params.keywords_exclude, output_file)
     )
     p.start()
     p.join()
