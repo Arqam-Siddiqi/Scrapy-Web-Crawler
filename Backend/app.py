@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
-from typing import Optional, Any
+from typing import Optional
 from scrapy.utils.project import get_project_settings
 from scrapy.crawler import CrawlerProcess
 from web_crawler.spiders.anime import AnimeSpider
@@ -10,7 +10,6 @@ import json
 import os
 import multiprocessing
 import tempfile
-from pathlib import Path
 
 app = FastAPI()
 
@@ -57,6 +56,7 @@ async def ping():
 
 @app.post("/crawl")
 async def crawl(params: CrawlerParams):
+    print("start")
     # Create a temporary file in the Backend directory
     temp_dir = os.path.dirname(os.path.abspath(__file__))
     fd, output_file = tempfile.mkstemp(prefix="crawler_", suffix=".json", dir=temp_dir)
@@ -90,6 +90,7 @@ async def crawl(params: CrawlerParams):
         p.start()
         p.join()
         
+        print(f"Spider finished running. Output saved to {output_file}")
         if not os.path.exists(output_file) or os.path.getsize(output_file) == 0:
             raise HTTPException(status_code=500, detail="Crawler failed to generate results or output file is empty")
         
