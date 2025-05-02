@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
 from typing import Optional
@@ -33,7 +33,7 @@ class CrawlerParams(BaseModel):
     keywords_include: Optional[str] = None
     keywords_exclude: Optional[str] = None
 
-def run_spider_in_process(settings, url, domain, max_pages, keywords_include, keywords_exclude, output_file):
+def run_spider_in_process(settings, url, domain, max_pages, keywords_include, keywords_exclude):
     """Run spider in a separate process and save results to the output file"""
     process = CrawlerProcess(settings)
     
@@ -83,7 +83,7 @@ async def crawl(params: CrawlerParams):
         p = ctx.Process(
             target=run_spider_in_process,
             args=(settings, str(params.url), domain, params.max_pages, 
-                params.keywords_include, params.keywords_exclude, output_file)
+                params.keywords_include, params.keywords_exclude)
         )
         p.start()
         p.join()
